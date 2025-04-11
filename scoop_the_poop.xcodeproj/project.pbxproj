@@ -16,6 +16,11 @@
 			path = scoop_the_poop;
 			sourceTree = "<group>";
 		};
+		3F3502832DA948BD00B1DA93 /* documents */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = documents;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,6 +39,7 @@
 			children = (
 				3F3502762DA942FB00B1DA93 /* scoop_the_poop */,
 				3F3502752DA942FB00B1DA93 /* Products */,
+				3F3502832DA948BD00B1DA93 /* documents */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,6 +68,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				3F3502762DA942FB00B1DA93 /* scoop_the_poop */,
+				3F3502832DA948BD00B1DA93 /* documents */,
 			);
 			name = scoop_the_poop;
 			packageProductDependencies = (
