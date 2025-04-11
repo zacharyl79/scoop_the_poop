@@ -37,8 +37,8 @@ class SQLiteHandler {
         let createTableQuery = """
             CREATE TABLE IF NOT EXISTS dog_poop_locations(
                 unique_key INTEGER PRIMARY KEY AUTOINCREMENT,
-                started_date NUMERIC NOT NULL,
-                closed_date NUMERIC,
+                started_date TEXT NOT NULL,
+                closed_date TEXT,
                 longitude REAL,
                 latitude REAL
             );
@@ -52,25 +52,78 @@ class SQLiteHandler {
         }
     }
     
-    func insertNewMarkerFromUser() {
+    func insertNewMarkerFromUser(newRecord: PoopMarker) {
+        let insertQuery = "INSERT INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?);"
+        var statement: OpaquePointer?
         
+        if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, newRecord.started_date, -1, nil)
+            sqlite3_bind_text(statement, 2, newRecord.closed_date ?? "NULL", -1, nil)
+            sqlite3_bind_text(statement, 3, String(newRecord.longitude), -1, nil)
+            sqlite3_bind_text(statement, 4, String(newRecord.latitude), -1, nil)
+            
+            if sqlite3_step(statement) == SQLITE_DONE {
+                print("Successfully Inserted New Marker")
+            }
+            else {
+                print("Could Not Insert Marker")
+            }
+        }
     }
     
     func insertBulkOpenData() {
-        
+        if let extractedData = CSVHandler().parseColumnsByName(fileName: "dog_poop_20250411", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
+            for row in extractedData {
+                let insertQuery = "INSERT INTO dog_poop_locations (unique_key, started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?, ?);"
+                var statement: OpaquePointer?
+                
+                if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
+                    sqlite3_bind_text(statement, 1, row[0], -1, nil)
+                    sqlite3_bind_text(statement, 2, row[1], -1, nil)
+                    sqlite3_bind_text(statement, 3, row[2], -1, nil)
+                    sqlite3_bind_text(statement, 4, row[3], -1, nil)
+                    sqlite3_bind_text(statement, 5, row[4], -1, nil)
+                    
+                    if sqlite3_step(statement) == SQLITE_DONE {
+                        print("Successfully Inserted New Marker")
+                    }
+                    else {
+                        print("Could Not Insert Marker")
+                    }
+                }
+            }
+        }
+        else {
+            print("Could Not Extract Data From CSV")
+        }
     }
     
-    func fetchAllMarkersWithinRegion() {
-        
-    }
     
     func resolveMarker() {
         
     }
     
-    func fetchNonResolvedMarkers() {
-        
-    }
-    
+    func fetchNonResolvedMarkers() -> [PoopMarker] {
+        let query = "SELECT * FROM dog_poop_locations WHERE closed_date IS NULL;"
+            var statement: OpaquePointer?
+            var poopMarkers: [PoopMarker] = []
 
+            if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+                while sqlite3_step(statement) == SQLITE_ROW {
+                    let unique_key = sqlite3_column_int(statement, 0)
+                    let started_date = String(cString: sqlite3_column_text(statement, 1))
+                    let closed_date = String(cString: sqlite3_column_text(statement, 2))
+                    let longitude = Double(sqlite3_column_double(statement, 3))
+                    let latitude = Double(sqlite3_column_double(statement, 4))
+                    
+                    let poopMarker = PoopMarker(unique_key: unique_key, started_date: started_date, closed_date: closed_date, longitude: longitude, latitude: latitude)
+                    poopMarkers.append(poopMarker)
+                }
+            } else {
+                print("Cannot Retrive Markers From Table")
+            }
+            sqlite3_finalize(statement)
+
+            return poopMarkers
+    }
 }
