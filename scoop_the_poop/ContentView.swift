@@ -7,15 +7,26 @@
 
 import SwiftUI
 import MapKit
+
 struct ContentView: View {
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060), // New York City -> Should be changed to user location
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
+    @State private var tappedPoop: PoopMarker?
     
     var body: some View {
         Map(initialPosition: .region(region)) {
-            Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060))
+            ForEach(PoopDataModelClass.poopArr) poop in {
+                Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060))
+                    .onTapGesture {
+                        tappedPoop = poop
+                    }
+                    .sheet(item: $tappedPoop) { val in
+                        PoopDescription(poopInfo: val)
+                    }
+            }
+            
             UserAnnotation() // Example: Add user location annotation
         }
         .onMapCameraChange(frequency: .continuous) { camera in
@@ -23,6 +34,7 @@ struct ContentView: View {
         }
     }
 }
+
 #Preview {
     ContentView()
 }
