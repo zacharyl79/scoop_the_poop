@@ -54,7 +54,7 @@ class SQLiteHandler: ObservableObject {
     }
     
     func insertNewMarkerFromUser(newRecord: PoopMarker) {
-        let insertQuery = "INSERT INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?);"
+        let insertQuery = "INSERT INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?) ON CONFLICT(started_date, closed_date, longitude, latitude) DO NOTHING;;"
         var statement: OpaquePointer?
         
         if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
@@ -75,7 +75,7 @@ class SQLiteHandler: ObservableObject {
     func insertBulkOpenData() {
         if let extractedData = CSVHandler().parseColumnsByName(fileName: "dog_poop_20250411", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
             for row in extractedData {
-                let insertQuery = "INSERT INTO dog_poop_locations (unique_key, started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?, ?);"
+                let insertQuery = "INSERT OR IGNORE INTO dog_poop_locations (unique_key, started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?, ?);"
                 var statement: OpaquePointer?
                 
                 if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
@@ -100,8 +100,26 @@ class SQLiteHandler: ObservableObject {
     }
     
     
-    func resolveMarker() {
-        
+    func resolveMarker(unique_identifier: Int32) {
+        let query = "UPDATE dog_poop_locations SET closed_date = NULL WHERE unique_key = ?"
+            var statement: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+                sqlite3_bind_int(statement, 1, unique_identifier)
+                if sqlite3_step(statement) == SQLITE_DONE {
+                    if sqlite3_changes(db) > 0 {
+                        print("Successfully Resolved Marker")
+                    } else {
+                        print("No matching marker found.")
+                    }
+                }
+                else {
+                    print("Could Not Resolve Marker")
+                }
+            } else {
+                print("Cannot Retrive Markers From Table")
+            }
+            sqlite3_finalize(statement)
     }
     
     func fetchNonResolvedMarkers() {
