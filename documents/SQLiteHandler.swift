@@ -104,7 +104,7 @@ class SQLiteHandler {
     }
     
     func fetchNonResolvedMarkers() -> [PoopMarker] {
-        let query = "SELECT * FROM dog_poop_locations WHERE closed_date IS NULL;"
+        let query = "SELECT * FROM dog_poop_locations;"
             var statement: OpaquePointer?
             var poopMarkers: [PoopMarker] = []
 
