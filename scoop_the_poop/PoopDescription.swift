@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct PoopDescription: View {
+    private var poopInfo: PoopMarker
+    
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
