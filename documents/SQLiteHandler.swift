@@ -8,7 +8,8 @@
 import Foundation
 import SQLite3
 
-class SQLiteHandler {
+class SQLiteHandler: ObservableObject {
+    @Published var markers: [PoopMarker] = []
     var db: OpaquePointer?
     
     init() {
@@ -103,7 +104,7 @@ class SQLiteHandler {
         
     }
     
-    func fetchNonResolvedMarkers() -> [PoopMarker] {
+    func fetchNonResolvedMarkers() {
         let query = "SELECT * FROM dog_poop_locations;"
             var statement: OpaquePointer?
             var poopMarkers: [PoopMarker] = []
@@ -124,6 +125,6 @@ class SQLiteHandler {
             }
             sqlite3_finalize(statement)
 
-            return poopMarkers
+            markers = poopMarkers
     }
 }

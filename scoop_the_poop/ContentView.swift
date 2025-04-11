@@ -9,6 +9,7 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
+    @EnvironmentObject private var handler: SQLiteHandler
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060), // New York City -> Should be changed to user location
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
@@ -17,7 +18,7 @@ struct ContentView: View {
     
     var body: some View {
         Map(initialPosition: .region(region)) {
-            ForEach(PoopDataModelClass.poopArr) { poop in
+            ForEach(handler.markers) { poop in
                 Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060))
                     .onTapGesture {
                         tappedPoop = poop
@@ -37,4 +38,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(SQLiteHandler())
 }

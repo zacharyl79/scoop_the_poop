@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct scoop_the_poopApp: App {
+    @StateObject private var handler: SQLiteHandler = SQLiteHandler()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(handler)
         }
     }
 }
