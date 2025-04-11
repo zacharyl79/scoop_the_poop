@@ -6,19 +6,23 @@
 //
 
 import SwiftUI
-//dsdsddaskdsakdsasashdgasyd
+import MapKit
 struct ContentView: View {
+    @State private var region = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060), // New York City -> Should be changed to user location
+        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+    )
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Map(initialPosition: .region(region)) {
+            Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060))
+            UserAnnotation() // Example: Add user location annotation
         }
-        .padding()
+        .onMapCameraChange(frequency: .continuous) { camera in
+            print("Camera region: \(camera.region)")
+        }
     }
 }
-
 #Preview {
     ContentView()
 }
