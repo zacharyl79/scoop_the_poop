@@ -135,7 +135,7 @@ class SQLiteHandler: ObservableObject {
                     let longitude = Double(sqlite3_column_double(statement, 3))
                     let latitude = Double(sqlite3_column_double(statement, 4))
                     
-                    let poopMarker = PoopMarker(unique_key: unique_key, started_date: started_date, closed_date: closed_date, longitude: longitude, latitude: latitude)
+                    let poopMarker = PoopMarker(id: unique_key, started_date: started_date, closed_date: closed_date, longitude: longitude, latitude: latitude)
                     poopMarkers.append(poopMarker)
                 }
             } else {

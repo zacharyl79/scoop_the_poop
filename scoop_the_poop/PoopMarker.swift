@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct PoopMarker {
-    var unique_key: Int32
+struct PoopMarker: Identifiable {
+    var id: Int32
     var started_date: String
     var closed_date: String?
     var longitude: Double

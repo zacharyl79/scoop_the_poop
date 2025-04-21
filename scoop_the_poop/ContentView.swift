@@ -20,12 +20,13 @@ struct ContentView: View {
         Map(initialPosition: .region(region)) {
             ForEach(handler.markers) { poop in
                 Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060))
-                    .onTapGesture {
+                    /*.onTapGesture {
                         tappedPoop = poop
                     }
                     .sheet(item: $tappedPoop) { val in
                         PoopDescription(poopInfo: val)
                     }
+                     */
             }
             
             UserAnnotation() // Example: Add user location annotation
