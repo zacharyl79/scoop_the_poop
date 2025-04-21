@@ -15,6 +15,8 @@ class SQLiteHandler: ObservableObject {
     init() {
         openDatabase()
         createTable()
+        insertBulkOpenData()
+        print(markers)
     }
     
     deinit {
@@ -74,6 +76,7 @@ class SQLiteHandler: ObservableObject {
     
     func insertBulkOpenData() {
         if let extractedData = CSVHandler().parseColumnsByName(fileName: "dog_poop_20250411", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
+            print(extractedData)
             for row in extractedData {
                 let insertQuery = "INSERT OR IGNORE INTO dog_poop_locations (unique_key, started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?, ?);"
                 var statement: OpaquePointer?
@@ -92,6 +95,7 @@ class SQLiteHandler: ObservableObject {
                         print("Could Not Insert Marker")
                     }
                 }
+                sqlite3_finalize(statement)
             }
         }
         else {

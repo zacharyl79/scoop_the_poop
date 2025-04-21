@@ -23,7 +23,7 @@ struct CSVHandler {
                 return nil
             }
             
-            let headers = headerRow.components(separatedBy: ",")
+            let headers = headerRow.components(separatedBy: ",").map {$0.trimmingCharacters(in: .whitespaces) }
             
             let columnIndices = columnNames.compactMap { headers.firstIndex(of: $0) }
             
@@ -42,7 +42,6 @@ struct CSVHandler {
                 }
                 extractedData.append(selectedColumns)
             }
-            
             return extractedData
         } catch {
             print("Error reading file: \(error)")
