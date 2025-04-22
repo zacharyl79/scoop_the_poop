@@ -31,17 +31,22 @@ struct CSVHandler {
                 print("No matching columns found")
                 return nil
             }
+
             
             var extractedData: [[String]] = []
             
             for row in rows.dropFirst() {
-                let fields = row.components(separatedBy: ",")
-                let selectedColumns = columnIndices.compactMap { index -> String? in
-                    guard index < fields.count else { return nil }
-                    return fields[index]
+                if !row.trimmingCharacters(in: .whitespaces).isEmpty {
+                    let fields = row.components(separatedBy: ",")
+                    let selectedColumns = columnIndices.compactMap { index -> String? in
+                        guard index < fields.count else { return nil }
+                        return fields[index]
+                    }
+                    extractedData.append(selectedColumns)
                 }
-                extractedData.append(selectedColumns)
             }
+            print(extractedData)
+            print("inside method complete")
             return extractedData
         } catch {
             print("Error reading file: \(error)")

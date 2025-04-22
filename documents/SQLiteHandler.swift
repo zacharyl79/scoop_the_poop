@@ -15,7 +15,7 @@ class SQLiteHandler: ObservableObject {
     init() {
         openDatabase()
         createTable()
-        insertBulkOpenData()
+        fetchNonResolvedMarkers()
         print(markers)
     }
     
@@ -42,8 +42,8 @@ class SQLiteHandler: ObservableObject {
                 unique_key INTEGER PRIMARY KEY AUTOINCREMENT,
                 started_date TEXT NOT NULL,
                 closed_date TEXT,
-                longitude REAL,
-                latitude REAL
+                latitude REAL,
+                longitude REAL
             );
             """
         if sqlite3_exec(db, createTableQuery, nil, nil, nil) != SQLITE_OK {
@@ -62,8 +62,8 @@ class SQLiteHandler: ObservableObject {
         if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
             sqlite3_bind_text(statement, 1, newRecord.started_date, -1, nil)
             sqlite3_bind_text(statement, 2, newRecord.closed_date ?? "NULL", -1, nil)
-            sqlite3_bind_text(statement, 3, String(newRecord.longitude), -1, nil)
-            sqlite3_bind_text(statement, 4, String(newRecord.latitude), -1, nil)
+            sqlite3_bind_double(statement, 3, Double(newRecord.longitude))
+            sqlite3_bind_double(statement, 4, Double(newRecord.latitude))
             
             if sqlite3_step(statement) == SQLITE_DONE {
                 print("Successfully Inserted New Marker")
@@ -75,18 +75,18 @@ class SQLiteHandler: ObservableObject {
     }
     
     func insertBulkOpenData() {
-        if let extractedData = CSVHandler().parseColumnsByName(fileName: "dog_poop_20250411", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
-            print(extractedData)
+        if let extractedData = CSVHandler().parseColumnsByName(fileName: "test", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
             for row in extractedData {
+                print(row)
                 let insertQuery = "INSERT OR IGNORE INTO dog_poop_locations (unique_key, started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?, ?);"
                 var statement: OpaquePointer?
                 
                 if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
-                    sqlite3_bind_text(statement, 1, row[0], -1, nil)
+                    sqlite3_bind_int(statement, 1, Int32(row[0]) ?? 0)
                     sqlite3_bind_text(statement, 2, row[1], -1, nil)
                     sqlite3_bind_text(statement, 3, row[2], -1, nil)
-                    sqlite3_bind_text(statement, 4, row[3], -1, nil)
-                    sqlite3_bind_text(statement, 5, row[4], -1, nil)
+                    sqlite3_bind_double(statement, 4, Double(row[3]) ?? 0.0)
+                    sqlite3_bind_double(statement, 5, Double(row[4]) ?? 0.0)
                     
                     if sqlite3_step(statement) == SQLITE_DONE {
                         print("Successfully Inserted New Marker")

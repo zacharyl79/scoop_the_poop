@@ -19,7 +19,7 @@ struct ContentView: View {
     var body: some View {
         Map(initialPosition: .region(region)) {
             ForEach(handler.markers) { poop in
-            Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude))
+                Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: -73.8427672692108, longitude: 40.87217881221171))
                     /*.onTapGesture {
                         tappedPoop = poop
                     }
