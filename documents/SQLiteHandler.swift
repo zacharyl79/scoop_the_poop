@@ -7,6 +7,7 @@
 
 import Foundation
 import SQLite3
+import UIKit
 
 class SQLiteHandler: ObservableObject {
     @Published var markers: [PoopMarker] = []
@@ -43,7 +44,8 @@ class SQLiteHandler: ObservableObject {
                 started_date TEXT NOT NULL,
                 closed_date TEXT,
                 latitude REAL,
-                longitude REAL
+                longitude REAL,
+                image BLOB
             );
             """
         if sqlite3_exec(db, createTableQuery, nil, nil, nil) != SQLITE_OK {
@@ -56,7 +58,7 @@ class SQLiteHandler: ObservableObject {
     }
     
     func insertNewMarkerFromUser(newRecord: PoopMarker) {
-        let insertQuery = "INSERT INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?) ON CONFLICT(started_date, closed_date, longitude, latitude) DO NOTHING;;"
+        let insertQuery = "INSERT OR REPLACE INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?) ON CONFLICT(started_date, closed_date, longitude, latitude, image);"
         var statement: OpaquePointer?
         
         if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
@@ -64,6 +66,13 @@ class SQLiteHandler: ObservableObject {
             sqlite3_bind_text(statement, 2, newRecord.closed_date ?? "NULL", -1, nil)
             sqlite3_bind_double(statement, 3, Double(newRecord.longitude))
             sqlite3_bind_double(statement, 4, Double(newRecord.latitude))
+            
+            // Bind image as BLOB
+            if let image = newRecord.image, let imageData = image.jpegData(compressionQuality: 1.0) {
+                sqlite3_bind_blob(statement, 5, (imageData as NSData).bytes, Int32(imageData.count), nil)
+            } else {
+                sqlite3_bind_blob(statement, 5, nil, 0, nil) // Handle case where there is no image
+            }
             
             if sqlite3_step(statement) == SQLITE_DONE {
                 print("Successfully Inserted New Marker")
@@ -74,6 +83,7 @@ class SQLiteHandler: ObservableObject {
         }
     }
     
+    // Doesn't Work
     func insertBulkOpenData() {
         if let extractedData = CSVHandler().parseColumnsByName(fileName: "test", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
             for row in extractedData {
@@ -105,7 +115,7 @@ class SQLiteHandler: ObservableObject {
     
     
     func resolveMarker(unique_identifier: Int32) {
-        let query = "UPDATE dog_poop_locations SET closed_date = NULL WHERE unique_key = ?"
+        let query = "DELETE FROM dog_poop_locations WHERE unique_key = ?;"
             var statement: OpaquePointer?
 
             if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
@@ -136,10 +146,22 @@ class SQLiteHandler: ObservableObject {
                     let unique_key = sqlite3_column_int(statement, 0)
                     let started_date = String(cString: sqlite3_column_text(statement, 1))
                     let closed_date = String(cString: sqlite3_column_text(statement, 2))
-                    let longitude = Double(sqlite3_column_double(statement, 3))
-                    let latitude = Double(sqlite3_column_double(statement, 4))
+                    let latitude = Double(sqlite3_column_double(statement, 3))
+                    let longitude = Double(sqlite3_column_double(statement, 4))
+                    // Retrieve the size of the BLOB
+                    let blobBytes = sqlite3_column_blob(statement, 5)
+                    let blobLength = sqlite3_column_bytes(statement, 5)
+
+                    // Ensure the BLOB exists
+                    let image: UIImage?
+                    if let blobBytes = blobBytes, blobLength > 0 {
+                        let data = Data(bytes: blobBytes, count: Int(blobLength))
+                        image = UIImage(data: data)
+                    } else {
+                        image = nil // Handle the case where there is no image
+                    }
                     
-                    let poopMarker = PoopMarker(id: unique_key, started_date: started_date, closed_date: closed_date, longitude: longitude, latitude: latitude)
+                    let poopMarker = PoopMarker(id: unique_key, started_date: started_date, closed_date: closed_date, longitude: longitude, latitude: latitude, image: image)
                     poopMarkers.append(poopMarker)
                 }
             } else {

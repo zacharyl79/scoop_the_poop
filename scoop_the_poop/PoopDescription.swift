@@ -9,7 +9,10 @@ import SwiftUI
 
 struct PoopDescription: View {
     var poopInfo: PoopMarker
-    
+    // Image(uiImage: retrievedImage)
+//        .resizable()
+//        .scaledToFit()
+
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }

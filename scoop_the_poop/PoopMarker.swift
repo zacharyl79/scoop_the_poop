@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct PoopMarker: Identifiable {
     var id: Int32
@@ -13,4 +14,5 @@ struct PoopMarker: Identifiable {
     var closed_date: String?
     var longitude: Double
     var latitude: Double
+    var image: UIImage?
 }

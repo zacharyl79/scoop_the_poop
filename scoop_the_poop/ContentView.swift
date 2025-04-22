@@ -10,29 +10,61 @@ import MapKit
 
 struct ContentView: View {
     @EnvironmentObject private var handler: SQLiteHandler
+    @StateObject private var locationManager = LocationManager()
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060), // New York City -> Should be changed to user location
+        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060), // New York City
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
     @State private var tappedPoop: PoopMarker?
     
     var body: some View {
-        Map(initialPosition: .region(region)) {
-            ForEach(handler.markers) { poop in
-                Marker("Poop", coordinate: CLLocationCoordinate2D(latitude: -73.8427672692108, longitude: 40.87217881221171))
-                    /*.onTapGesture {
-                        tappedPoop = poop
+        if let coordinate = locationManager.lastKnownLocation {
+            Map(initialPosition: .region(MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude),
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            ))) {
+                ForEach(handler.markers) { poop in
+                    Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
+                        Image(systemName: "mappin.circle.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.red)
+                            .onTapGesture {
+                                tappedPoop = poop // Set tapped marker when tapped
+                            }
                     }
-                    .sheet(item: $tappedPoop) { val in
-                        PoopDescription(poopInfo: val)
-                    }
-                     */
+                }
+                
+                UserAnnotation() // Example: Add user location annotation
             }
-            
-            UserAnnotation() // Example: Add user location annotation
+            .sheet(item: $tappedPoop) { val in
+                PoopDescription(poopInfo: val)
+            }
+            .onMapCameraChange(frequency: .continuous) { camera in
+                print("Camera region: \(camera.region)")
+            }
         }
-        .onMapCameraChange(frequency: .continuous) { camera in
-            print("Camera region: \(camera.region)")
+        else {
+            Map(initialPosition: .region(region)) {
+                ForEach(handler.markers) { poop in
+                    Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
+                        Image(systemName: "mappin.circle.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.red)
+                            .onTapGesture {
+                                tappedPoop = poop // Set tapped marker when tapped
+                            }
+                    }
+                }
+                UserAnnotation() // Example: Add user location annotation
+            }
+            .sheet(item: $tappedPoop) { val in
+                PoopDescription(poopInfo: val)
+            }
+            .onMapCameraChange(frequency: .continuous) { camera in
+                print("Camera region: \(camera.region)")
+            }
         }
     }
 }
