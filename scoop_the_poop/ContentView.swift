@@ -27,7 +27,7 @@ struct ContentView: View {
             ))) {
                 ForEach(handler.markers) { poop in
                     Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
-                        Image(systemName: "mappin.circle.fill")
+                        Image(systemName: "exclamationmark.circle.fill")
                             .resizable()
                             .frame(width: 30, height: 30)
                             .foregroundColor(.red)
@@ -41,6 +41,7 @@ struct ContentView: View {
             }
             .sheet(item: $tappedPoop) { val in
                 PoopDescription(poopInfo: val)
+                    .presentationDetents([.medium])
             }
             .onMapCameraChange(frequency: .continuous) { camera in
                 print("Camera region: \(camera.region)")
@@ -50,7 +51,7 @@ struct ContentView: View {
             Map(initialPosition: .region(region)) {
                 ForEach(handler.markers) { poop in
                     Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
-                        Image(systemName: "mappin.circle.fill")
+                        Image(systemName: "exclamationmark.circle.fill")
                             .resizable()
                             .frame(width: 30, height: 30)
                             .foregroundColor(.red)
@@ -63,6 +64,7 @@ struct ContentView: View {
             }
             .sheet(item: $tappedPoop) { val in
                 PoopDescription(poopInfo: val)
+                    .presentationDetents([.medium])
             }
             .onMapCameraChange(frequency: .continuous) { camera in
                 print("Camera region: \(camera.region)")
@@ -70,10 +72,11 @@ struct ContentView: View {
         }
         Button(action: {
             cameraOn.toggle()
-        }){
+        }) {
             Image(systemName: "camera")
         }
-        .sheet(isPresented: $cameraOn) {            CameraView(image: $viewModel.currentFrame)
+        .sheet(isPresented: $cameraOn) {
+            CameraView(image: $viewModel.currentFrame)
         }
     }
 }

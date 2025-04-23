@@ -9,12 +9,25 @@ import SwiftUI
 
 struct PoopDescription: View {
     var poopInfo: PoopMarker
-    // Image(uiImage: retrievedImage)
-//        .resizable()
-//        .scaledToFit()
 
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            if let image = poopInfo.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Image(systemName: "photo.artframe")
+                    .resizable()
+                    .frame(width: 135, height: 110)
+            }
+            
+            Button("Remove marker") {
+                
+            }
+            .buttonStyle(BorderedProminentButtonStyle())
+            .padding()
+        }
     }
 }
 
