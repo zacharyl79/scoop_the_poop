@@ -8,12 +8,12 @@ import Foundation
 import AVFoundation
 
 class CameraManager: NSObject {
-    private let captureSession = AVCaptureSession()
-    private var deviceInput: AVCaptureDeviceInput?
-    private var videoOutput: AVCaptureVideoDataOutput?
-    private let systemPreferredCamera = AVCaptureDevice.default(for: .video)
-    private var sessionQueue = DispatchQueue(label: "video.preview.session")
-    private var isAuthorized: Bool {
+    let captureSession = AVCaptureSession()
+    var deviceInput: AVCaptureDeviceInput?
+    var videoOutput: AVCaptureVideoDataOutput?
+    let systemPreferredCamera = AVCaptureDevice.default(for: .video)
+    var sessionQueue = DispatchQueue(label: "video.preview.session")
+    var isAuthorized: Bool {
             get async {
                 let status = AVCaptureDevice.authorizationStatus(for: .video)
                 
@@ -29,7 +29,7 @@ class CameraManager: NSObject {
                 return isAuthorized
             }
         }
-    private var addToPreviewStream: ((CGImage) -> Void)?
+    var addToPreviewStream: ((CGImage) -> Void)?
     lazy var previewStream: AsyncStream<CGImage> = {
         AsyncStream { continuation in
             addToPreviewStream = { cgImage in
@@ -44,7 +44,7 @@ class CameraManager: NSObject {
             await startSession()
         }
     }
-    private func configureSession() async {
+    func configureSession() async {
         guard await isAuthorized,
                   let systemPreferredCamera,
                   let deviceInput = try? AVCaptureDeviceInput(device: systemPreferredCamera)
@@ -66,13 +66,12 @@ class CameraManager: NSObject {
         captureSession.addInput(deviceInput)
         captureSession.addOutput(videoOutput)
     }
-        
-    private func startSession() async {
-        func startSession() async {
-            guard await isAuthorized else { return }
-            captureSession.startRunning()
+    func startSession() async {
+        guard await isAuthorized else { return }
+            if !captureSession.isRunning{
+                captureSession.startRunning()
+            }
         }
-    }
     
 }
 extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -80,6 +79,7 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
+        print("Capture output called") // Add this line for debugging
         guard let currentFrame = sampleBuffer.cgImage else { return }
         addToPreviewStream?(currentFrame)
     }

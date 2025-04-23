@@ -58,6 +58,7 @@ class SQLiteHandler: ObservableObject {
     }
     
     func insertNewMarkerFromUser(newRecord: PoopMarker) {
+        print("called")
         let insertQuery = "INSERT OR REPLACE INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?) ON CONFLICT(started_date, closed_date, longitude, latitude, image);"
         var statement: OpaquePointer?
         

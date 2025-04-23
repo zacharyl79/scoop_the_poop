@@ -70,13 +70,12 @@ struct ContentView: View {
                 print("Camera region: \(camera.region)")
             }
         }
-        Button(action: {
-            cameraOn.toggle()
-        }) {
-            Image(systemName: "camera")
+        
+        Button("camera") {
+            cameraOn = true
         }
         .sheet(isPresented: $cameraOn) {
-            CameraView(image: $viewModel.currentFrame)
+            CameraView()
         }
     }
 }
