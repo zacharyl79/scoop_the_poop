@@ -16,10 +16,12 @@ struct ContentView: View {
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
     @State private var tappedPoop: PoopMarker?
+    @State private var resolvedPoopID: [Int32: CGFloat] = [:]
     @State private var viewModel = ViewModel()
     @State private var cameraOn = false
     
     var body: some View {
+        
         if let coordinate = locationManager.lastKnownLocation {
             Map(initialPosition: .region(MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude),
@@ -29,22 +31,27 @@ struct ContentView: View {
                     Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
                         Image(systemName: "exclamationmark.circle.fill")
                             .resizable()
-                            .frame(width: 30, height: 30)
+                            .frame(width: resolvedPoopID[poop.id], height: resolvedPoopID[poop.id])
+                            .animation(.easeOut(duration: 3), value: resolvedPoopID[poop.id])
                             .foregroundColor(.red)
                             .onTapGesture {
                                 tappedPoop = poop // Set tapped marker when tapped
                             }
                     }
                 }
-                
                 UserAnnotation() // Example: Add user location annotation
             }
             .sheet(item: $tappedPoop) { val in
-                PoopDescription(poopInfo: val)
+                PoopDescription(resolvedPoopID: $resolvedPoopID, poopInfo: val)
                     .presentationDetents([.medium])
             }
             .onMapCameraChange(frequency: .continuous) { camera in
                 print("Camera region: \(camera.region)")
+            }
+            .onAppear {
+                handler.markers.forEach { marker in
+                    resolvedPoopID[marker.id] = 30
+                }
             }
         }
         else {
@@ -53,7 +60,8 @@ struct ContentView: View {
                     Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
                         Image(systemName: "exclamationmark.circle.fill")
                             .resizable()
-                            .frame(width: 30, height: 30)
+                            .frame(width: resolvedPoopID[poop.id], height: resolvedPoopID[poop.id])
+                            .animation(.easeOut(duration: 3), value: resolvedPoopID[poop.id])
                             .foregroundColor(.red)
                             .onTapGesture {
                                 tappedPoop = poop // Set tapped marker when tapped
@@ -63,11 +71,16 @@ struct ContentView: View {
                 UserAnnotation() // Example: Add user location annotation
             }
             .sheet(item: $tappedPoop) { val in
-                PoopDescription(poopInfo: val)
+                PoopDescription(resolvedPoopID: $resolvedPoopID, poopInfo: val)
                     .presentationDetents([.medium])
             }
             .onMapCameraChange(frequency: .continuous) { camera in
                 print("Camera region: \(camera.region)")
+            }
+            .onAppear {
+                handler.markers.forEach { marker in
+                    resolvedPoopID[marker.id] = 30
+                }
             }
         }
         
