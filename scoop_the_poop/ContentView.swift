@@ -16,6 +16,8 @@ struct ContentView: View {
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
     @State private var tappedPoop: PoopMarker?
+    @State private var viewModel = ViewModel()
+    @State private var cameraOn = false
     
     var body: some View {
         if let coordinate = locationManager.lastKnownLocation {
@@ -65,6 +67,13 @@ struct ContentView: View {
             .onMapCameraChange(frequency: .continuous) { camera in
                 print("Camera region: \(camera.region)")
             }
+        }
+        Button(action: {
+            cameraOn.toggle()
+        }){
+            Image(systemName: "camera")
+        }
+        .sheet(isPresented: $cameraOn) {            CameraView(image: $viewModel.currentFrame)
         }
     }
 }
