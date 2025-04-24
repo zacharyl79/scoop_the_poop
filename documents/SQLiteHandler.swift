@@ -16,6 +16,7 @@ class SQLiteHandler: ObservableObject {
     init() {
         openDatabase()
         createTable()
+        insertBulkOpenData()
         fetchNonResolvedMarkers()
         print(markers)
     }

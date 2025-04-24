@@ -14,98 +14,74 @@ struct ContentView: View {
     @State private var cameraOn = false
     
     var body: some View {
-        
-        if let coordinate = locationManager.lastKnownLocation {
-            Map(initialPosition: .region(MKCoordinateRegion(
-                center: CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude),
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            ))) {
-                ForEach(handler.markers) { poop in
-                    Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
-                        Image(systemName: "exclamationmark.circle.fill")
-                            .resizable()
-                            .frame(width: resolvedPoopID[poop.id], height: resolvedPoopID[poop.id])
-                            .animation(.easeOut(duration: 3), value: resolvedPoopID[poop.id])
-                            .foregroundColor(.red)
-                            .onTapGesture {
-                                tappedPoop = poop // Set tapped marker when tapped
-                            }
-                    }
-                }
-                UserAnnotation()
-            }
-            .edgesIgnoringSafeArea(.all)
-            .sheet(item: $tappedPoop) { val in
-                PoopDescription(handler: handler, resolvedPoopID: $resolvedPoopID, poopInfo: val)
-                    .presentationDetents([.medium])
-            }
-            .onAppear {
-                // Request notification permissions
-                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-                    if granted {
-                        print("Notification permission granted")
-                    } else if let error = error {
-                        print("Error requesting notification permission: \(error.localizedDescription)")
-                    }
-                }
-                handler.markers.forEach { marker in
-                    resolvedPoopID[marker.id] = 30
-                }
-            }
-            .onChange(of: locationManager.lastKnownLocation ?? CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060)) { coord in //coordinate has to conform to Equatable
-                // Update the map's region when the location changes
-                region = MKCoordinateRegion(
-                    center: CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude),
+        ZStack(alignment: .bottomTrailing) {
+            if let coordinate = locationManager.lastKnownLocation {
+                Map(initialPosition: .region(MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude),
                     span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                )
-                
-                handler.markers.forEach { marker in
-                    if locationManager.withinDistance(
-                        userLatitude: coord.latitude,
-                        userLongitude: coord.longitude,
-                        markerLatitude: marker.latitude,
-                        markerLongitude: marker.longitude
-                    ) {
-                        scheduleNotification()
+                ))) {
+                    ForEach(handler.markers) { poop in
+                        Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .resizable()
+                                .frame(width: resolvedPoopID[poop.id], height: resolvedPoopID[poop.id])
+                                .animation(.easeOut(duration: 3), value: resolvedPoopID[poop.id])
+                                .foregroundColor(.red)
+                                .onTapGesture {
+                                    tappedPoop = poop // Set tapped marker when tapped
+                                }
+                        }
+                    }
+                    UserAnnotation()
+                }
+                .edgesIgnoringSafeArea(.all)
+                .sheet(item: $tappedPoop) { val in
+                    PoopDescription(handler: handler, resolvedPoopID: $resolvedPoopID, poopInfo: val)
+                        .presentationDetents([.medium])
+                }
+                .onAppear {
+                    print("Location Found")
+                    // Request notification permissions
+                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                        if granted {
+                            print("Notification permission granted")
+                        } else if let error = error {
+                            print("Error requesting notification permission: \(error.localizedDescription)")
+                        }
+                    }
+                    handler.markers.forEach { marker in
+                        resolvedPoopID[marker.id] = 30
                     }
                 }
-            
+                .onChange(of: locationManager.lastKnownLocation ?? CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060)) { coord in //coordinate has to conform to Equatable
+                    // Update the map's region when the location changes
+                    region = MKCoordinateRegion(
+                        center: CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude),
+                        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                    )
+                    handler.markers.forEach { marker in
+                        if locationManager.withinDistance(
+                            userLatitude: coord.latitude,
+                            userLongitude: coord.longitude,
+                            markerLatitude: marker.latitude,
+                            markerLongitude: marker.longitude
+                        ) {
+                            scheduleNotification()
+                        }
+                    }
+                }
+                Button(action: { cameraOn = true }) {
+                    Image(systemName: "camera.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                }
+                .buttonStyle(.borderedProminent)
+                .sheet(isPresented: $cameraOn) {
+                    CameraView(handler: handler, locationManager: locationManager)
+                }
+                .padding()
             }
-        }
-//        else {
-//            Map(initialPosition: .region(region)) {
-//                ForEach(handler.markers) { poop in
-//                    Annotation("Poop", coordinate: CLLocationCoordinate2D(latitude: poop.latitude, longitude: poop.longitude)) {
-//                        Image(systemName: "exclamationmark.circle.fill")
-//                            .resizable()
-//                            .frame(width: resolvedPoopID[poop.id], height: resolvedPoopID[poop.id])
-//                            .animation(.easeOut(duration: 3), value: resolvedPoopID[poop.id])
-//                            .foregroundColor(.red)
-//                            .onTapGesture {
-//                                tappedPoop = poop // Set tapped marker when tapped
-//                            }
-//                    }
-//                }
-//            }
-//            .sheet(item: $tappedPoop) { val in
-//                PoopDescription(resolvedPoopID: $resolvedPoopID, poopInfo: val)
-//                    .presentationDetents([.medium])
-//            }
-//            .onMapCameraChange(frequency: .continuous) { camera in
-//                print("Camera region: \(camera.region)")
-//            }
-//            .onAppear {
-//                handler.markers.forEach { marker in
-//                    resolvedPoopID[marker.id] = 30
-//                }
-//            }
-//
-//        }
-        Button("camera") {
-            cameraOn = true
-        }
-        .sheet(isPresented: $cameraOn) {
-            CameraView(handler: handler, locationManager: locationManager)
         }
     }
 }
