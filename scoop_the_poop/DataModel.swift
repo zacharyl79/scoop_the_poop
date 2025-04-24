@@ -8,9 +8,10 @@ import AVFoundation
 import SwiftUI
 import os.log
 import MapKit
+
 final class DataModel: ObservableObject {
-    @EnvironmentObject private var handler: SQLiteHandler
-    @StateObject private var locationManager: LocationManager = LocationManager()
+    private let locationManager: LocationManager
+    private let handler: SQLiteHandler
     let camera = Camera()
     let photoCollection = PhotoCollection(smartAlbum: .smartAlbumUserLibrary)
     
@@ -19,11 +20,12 @@ final class DataModel: ObservableObject {
     
     var isPhotosLoaded = false
     
-    init() {
+    init(locationManager: LocationManager, handler: SQLiteHandler) {
+        self.locationManager = locationManager
+        self.handler = handler
         Task {
             await handleCameraPreviews()
         }
-        
         Task {
             await handleCameraPhotos()
         }
@@ -73,18 +75,32 @@ final class DataModel: ObservableObject {
     func savePhoto(imageData: Data) {
         Task {
             do {
-                if let coordinate = locationManager.lastKnownLocation {
-                    let currentDate = Date()
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy/MM/dd"
-                    let formattedDate = dateFormatter.string(from: currentDate)
-                    handler.insertNewMarkerFromUser(newRecord: PoopMarker(id: 0, started_date: formattedDate, closed_date: nil, longitude: coordinate.longitude, latitude: coordinate.latitude, image: UIImage(data: imageData)))
-                    handler.fetchNonResolvedMarkers()
-                }
                 try await photoCollection.addImage(imageData)
                 logger.debug("Added image data to photo collection.")
-            } catch let error {
-                logger.error("Failed to add image to photo collection: \(error.localizedDescription)")
+
+                if let coordinate = locationManager.lastKnownLocation,
+                   let image = UIImage(data: imageData) {
+                    print(image)
+                    let currentDate = Date()
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                    let formattedDate = dateFormatter.string(from: currentDate)
+
+                    handler.insertNewMarkerFromUser(newRecord: PoopMarker(
+                        id: 0,
+                        started_date: formattedDate,
+                        closed_date: nil,
+                        longitude: coordinate.longitude,
+                        latitude: coordinate.latitude,
+                        image: image
+                    ))
+                    handler.fetchNonResolvedMarkers()
+                } else {
+                    logger.error("Missing location or failed to convert image data.")
+                }
+
+            } catch {
+                logger.error("Failed to add image to photo collection: (error.localizedDescription)")
             }
         }
     }

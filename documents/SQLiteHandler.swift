@@ -59,29 +59,38 @@ class SQLiteHandler: ObservableObject {
     
     func insertNewMarkerFromUser(newRecord: PoopMarker) {
         print("called")
-        let insertQuery = "INSERT OR REPLACE INTO dog_poop_locations (started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?) ON CONFLICT(started_date, closed_date, longitude, latitude, image);"
+        let insertQuery = "INSERT OR REPLACE INTO dog_poop_locations (started_date, closed_date, longitude, latitude, image) VALUES (?, ?, ?, ?, ?);"
         var statement: OpaquePointer?
-        
+
         if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
             sqlite3_bind_text(statement, 1, newRecord.started_date, -1, nil)
-            sqlite3_bind_text(statement, 2, newRecord.closed_date ?? "NULL", -1, nil)
+
+            if let closedDate = newRecord.closed_date {
+                sqlite3_bind_text(statement, 2, closedDate, -1, nil)
+            } else {
+                sqlite3_bind_null(statement, 2)
+            }
+
             sqlite3_bind_double(statement, 3, Double(newRecord.longitude))
             sqlite3_bind_double(statement, 4, Double(newRecord.latitude))
-            
-            // Bind image as BLOB
+
             if let image = newRecord.image, let imageData = image.jpegData(compressionQuality: 1.0) {
                 sqlite3_bind_blob(statement, 5, (imageData as NSData).bytes, Int32(imageData.count), nil)
             } else {
-                sqlite3_bind_blob(statement, 5, nil, 0, nil) // Handle case where there is no image
+                sqlite3_bind_blob(statement, 5, nil, 0, nil)
             }
-            
+
             if sqlite3_step(statement) == SQLITE_DONE {
                 print("Successfully Inserted New Marker")
+            } else {
+                let errmsg = String(cString: sqlite3_errmsg(db))
+                print("Could Not Insert Marker: (errmsg)")
             }
-            else {
-                print("Could Not Insert Marker")
-            }
+        } else {
+            let errmsg = String(cString: sqlite3_errmsg(db))
+            print("SQL Prepare Error: (errmsg)")
         }
+        sqlite3_finalize(statement)
     }
     
     // Doesn't Work
@@ -89,7 +98,7 @@ class SQLiteHandler: ObservableObject {
         if let extractedData = CSVHandler().parseColumnsByName(fileName: "test", columnNames: ["Unique Key", "Created Date", "Closed Date", "Latitude", "Longitude"]) {
             for row in extractedData {
                 print(row)
-                let insertQuery = "INSERT OR IGNORE INTO dog_poop_locations (unique_key, started_date, closed_date, longitude, latitude) VALUES (?, ?, ?, ?, ?);"
+                let insertQuery = "INSERT OR IGNORE INTO dog_poop_locations (unique_key, started_date, closed_date, latitude, longitude) VALUES (?, ?, ?, ?, ?);"
                 var statement: OpaquePointer?
                 
                 if sqlite3_prepare_v2(db, insertQuery, -1, &statement, nil) == SQLITE_OK {
@@ -146,7 +155,7 @@ class SQLiteHandler: ObservableObject {
                 while sqlite3_step(statement) == SQLITE_ROW {
                     let unique_key = sqlite3_column_int(statement, 0)
                     let started_date = String(cString: sqlite3_column_text(statement, 1))
-                    let closed_date = String(cString: sqlite3_column_text(statement, 2))
+                    let closed_date = (sqlite3_column_text(statement, 2) != nil) ? String(cString: sqlite3_column_text(statement, 2)) : nil
                     let latitude = Double(sqlite3_column_double(statement, 3))
                     let longitude = Double(sqlite3_column_double(statement, 4))
                     // Retrieve the size of the BLOB

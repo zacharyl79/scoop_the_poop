@@ -9,10 +9,11 @@ import SwiftUI
 import MapKit
 
 struct PoopDescription: View {
-    @EnvironmentObject private var handler: SQLiteHandler
+    @ObservedObject var handler: SQLiteHandler
+    @Environment(\.dismiss) var dismiss
     @Binding var resolvedPoopID: [Int32: CGFloat]
     var poopInfo: PoopMarker
-
+    
     var body: some View {
         VStack {
             if let image = poopInfo.image {
@@ -26,6 +27,7 @@ struct PoopDescription: View {
             }
             
             Button("Remove marker") {
+                dismiss()
                 withAnimation(.easeOut(duration: 3)) {
                     resolvedPoopID[poopInfo.id] = CGFloat(100)
                 }

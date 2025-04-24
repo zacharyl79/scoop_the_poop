@@ -4,42 +4,43 @@ import CoreLocation
 final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
     
     @Published var lastKnownLocation: CLLocationCoordinate2D?
-    var manager = CLLocationManager()
+    private var manager: CLLocationManager = CLLocationManager()
     
-    
-    func checkLocationAuthorization() {
-        
+    override init() {
+        super.init()
         manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.requestWhenInUseAuthorization()
         manager.startUpdatingLocation()
-        
+        print("Auth status: \(manager.authorizationStatus.rawValue)")
+    }
+    
+    // Triggered when location permission changes (e.g., user taps "Allow")
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
-        case .notDetermined://The user choose allow or denny your app to get the location yet
-            manager.requestWhenInUseAuthorization()
-            
-        case .restricted://The user cannot change this app’s status, possibly due to active restrictions such as parental controls being in place.
-            print("Location restricted")
-            
-        case .denied://The user dennied your app to get location or disabled the services location or the phone is in airplane mode
-            print("Location denied")
-            
-        case .authorizedAlways://This authorization allows you to use all location services and receive location events whether or not your app is in use.
-            print("Location authorizedAlways")
-            
-        case .authorizedWhenInUse://This authorization allows you to use all location services and receive location events only when your app is in use
-            print("Location authorized when in use")
-            lastKnownLocation = manager.location?.coordinate
-            
+        case .authorizedWhenInUse, .authorizedAlways:
+            print("✅ Location authorized")
+            manager.startUpdatingLocation()
+        case .denied, .restricted:
+            print("❌ Location denied or restricted")
+        case .notDetermined:
+            print("⏳ Waiting for user decision...")
         @unknown default:
-            print("Location service disabled")
-        
+            print("⚠️ Unknown location authorization status")
         }
     }
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {//Trigged every time authorization status changes
-        checkLocationAuthorization()
+    // Called every time the location updates
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let coordinate = locations.last?.coordinate else { return }
+        lastKnownLocation = coordinate
+        print("📍 Updated location: \(coordinate.latitude), \(coordinate.longitude)")
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        lastKnownLocation = locations.first?.coordinate
+    // Optional helper to check if a marker is close to the user
+    func withinDistance(userLatitude: Double, userLongitude: Double, markerLatitude: Double, markerLongitude: Double) -> Bool {
+        let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
+        let markerLocation = CLLocation(latitude: markerLatitude, longitude: markerLongitude)
+        return markerLocation.distance(from: userLocation) < 15
     }
 }

@@ -8,10 +8,13 @@ import SwiftUI
 import MapKit
 
 struct CameraView: View {
-    @StateObject private var model = DataModel()
-    
+    @StateObject private var model: DataModel
+    @Environment(\.dismiss) var dismiss
     private static let barHeightFactor = 0.15
     
+    init(handler: SQLiteHandler, locationManager: LocationManager) {
+        _model = StateObject(wrappedValue: DataModel(locationManager: locationManager, handler: handler))
+    }
     
     var body: some View {
         
@@ -73,6 +76,7 @@ struct CameraView: View {
             
             Button {
                 model.camera.takePhoto()
+                dismiss()
             } label: {
                 Label {
                     Text("Take Photo")

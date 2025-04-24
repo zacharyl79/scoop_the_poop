@@ -258,11 +258,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U8YLXUBNKL;
+				DEVELOPMENT_TEAM = 4LZ2679YH4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "scoop-the-poop-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "let me see it";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Give me ur location";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Give me ur location";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = bingbong;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -275,7 +276,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "edu.bths.scoop-the-poop";
+				PRODUCT_BUNDLE_IDENTIFIER = Harry.Lin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -290,11 +291,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U8YLXUBNKL;
+				DEVELOPMENT_TEAM = 4LZ2679YH4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "scoop-the-poop-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "let me see it";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Give me ur location";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Give me ur location";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = bingbong;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -307,7 +309,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "edu.bths.scoop-the-poop";
+				PRODUCT_BUNDLE_IDENTIFIER = Harry.Lin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

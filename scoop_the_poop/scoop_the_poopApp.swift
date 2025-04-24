@@ -13,8 +13,7 @@ struct scoop_the_poopApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(handler)
+            ContentView(handler: handler)
         }
     }
 }
