@@ -38,9 +38,9 @@ final class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObje
     }
     
     // Optional helper to check if a marker is close to the user
-    func withinDistance(userLatitude: Double, userLongitude: Double, markerLatitude: Double, markerLongitude: Double) -> Bool {
+    func withinDistance(userLatitude: Double, userLongitude: Double, markerLatitude: Double, markerLongitude: Double, threshold: Double = 15) -> Bool {
         let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
         let markerLocation = CLLocation(latitude: markerLatitude, longitude: markerLongitude)
-        return markerLocation.distance(from: userLocation) < 15
+        return markerLocation.distance(from: userLocation) < threshold
     }
 }

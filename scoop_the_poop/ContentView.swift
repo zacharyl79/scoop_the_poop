@@ -81,6 +81,8 @@ struct ContentView: View {
                     CameraView(handler: handler, locationManager: locationManager)
                 }
                 .padding()
+            } else {
+                ProgressView("Fetching Location...")
             }
         }
     }
@@ -108,15 +110,17 @@ func scheduleNotification() {
     }
 }
 
-extension CLLocationCoordinate2D: @retroactive Equatable, @retroactive Identifiable {
-    static public func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+extension CLLocationCoordinate2D: Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
         return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
-    }
-    public var id: String {
-        return "(latitude)-(longitude)"
     }
 }
 
+extension CLLocationCoordinate2D: Identifiable {
+    public var id: String {
+        "\(latitude)-\(longitude)"
+    }
+}
 
 #Preview {
     ContentView(handler: SQLiteHandler())

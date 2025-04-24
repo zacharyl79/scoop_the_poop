@@ -25,7 +25,9 @@ struct PoopDescription: View {
                     .resizable()
                     .frame(width: 135, height: 110)
             }
-            
+            Text("Date found: \(poopInfo.started_date)")
+                .font(.caption)
+                .padding()
             Button("Remove marker") {
                 dismiss()
                 withAnimation(.easeOut(duration: 3)) {

@@ -16,9 +16,9 @@ class SQLiteHandler: ObservableObject {
     init() {
         openDatabase()
         createTable()
-        insertBulkOpenData()
         fetchNonResolvedMarkers()
         print(markers)
+        print("Number of markers \(markers.count)")
     }
     
     deinit {
@@ -180,6 +180,8 @@ class SQLiteHandler: ObservableObject {
             }
             sqlite3_finalize(statement)
 
-            markers = poopMarkers
+            DispatchQueue.main.async {
+                self.markers = poopMarkers
+            }
     }
 }
